@@ -6,7 +6,7 @@ import (
 	"io"
 	"log"
 
-	"github.com/ModChain/massalib/massagrpc"
+	"github.com/KarpelesLab/massalib/massagrpc"
 	"google.golang.org/grpc"
 )
 

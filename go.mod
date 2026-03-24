@@ -1,4 +1,4 @@
-module github.com/ModChain/massalib
+module github.com/KarpelesLab/massalib
 
 go 1.23.1
 

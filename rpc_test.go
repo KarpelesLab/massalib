@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/ModChain/massalib/massagrpc"
+	"github.com/KarpelesLab/massalib/massagrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

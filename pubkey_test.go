@@ -3,7 +3,7 @@ package massalib_test
 import (
 	"testing"
 
-	"github.com/ModChain/massalib"
+	"github.com/KarpelesLab/massalib"
 )
 
 func TestPubkeyParse(t *testing.T) {
