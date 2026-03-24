@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-// EncodeProtobufVarint encodes the given integer using protobuf conventions
+// EncodeProtobufVarint encodes the given integer using protobuf varint conventions.
 func EncodeProtobufVarint(x uint64) []byte {
 	var buf [10]byte // varint for 64-bit fits in at most 10 bytes
 	n := 0
@@ -19,6 +19,8 @@ func EncodeProtobufVarint(x uint64) []byte {
 }
 
 // DecodeProtobufVarint decodes a varint encoded following protobuf conventions
+// from the given byte slice. It returns the decoded value, the number of bytes
+// consumed, and any error encountered.
 func DecodeProtobufVarint(buf []byte) (result uint64, buflen int, err error) {
 	var shift uint
 	for i, b := range buf {
@@ -46,6 +48,8 @@ func DecodeProtobufVarint(buf []byte) (result uint64, buflen int, err error) {
 	return 0, 0, fmt.Errorf("buffer ended prematurely while decoding varint")
 }
 
+// ReadProtobufVarint reads a protobuf varint from the given reader. It returns
+// the decoded value, the number of bytes read, and any error encountered.
 func ReadProtobufVarint(r bytereader) (uint64, int64, error) {
 	var result uint64
 	var shift uint

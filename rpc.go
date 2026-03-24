@@ -10,14 +10,15 @@ import (
 	"google.golang.org/grpc"
 )
 
+// RPC wraps gRPC client connections to a Massa node, providing convenient
+// methods for common operations.
 type RPC struct {
 	cPub *grpc.ClientConn
 	pub  massagrpc.PublicServiceClient
 }
 
-// New returns a new connection to a massa node
-//
-// grpc://localhost:33037
+// New returns a new RPC client connected to the given Massa node target
+// (e.g. "localhost:33037").
 func New(target string, opts ...grpc.DialOption) (*RPC, error) {
 	cPub, err := grpc.NewClient(target, opts...)
 	if err != nil {
@@ -31,12 +32,17 @@ func New(target string, opts ...grpc.DialOption) (*RPC, error) {
 	return cl, nil
 }
 
-// Public exposes the raw grpc public interface
+// Close closes the underlying gRPC client connection.
+func (rpc *RPC) Close() error {
+	return rpc.cPub.Close()
+}
+
+// Public exposes the raw gRPC public service interface for advanced usage.
 func (rpc *RPC) Public() massagrpc.PublicServiceClient {
 	return rpc.pub
 }
 
-// GetStatus returns the status of the node
+// GetStatus returns the status of the connected Massa node.
 func (rpc *RPC) GetStatus(ctx context.Context) (*massagrpc.PublicStatus, error) {
 	res, err := rpc.pub.GetStatus(ctx, &massagrpc.GetStatusRequest{})
 	if err != nil {
@@ -45,8 +51,11 @@ func (rpc *RPC) GetStatus(ctx context.Context) (*massagrpc.PublicStatus, error) 
 	return res.Status, nil
 }
 
+// GetSlotTransfers opens a streaming connection that receives transfer events for each new slot.
+// It requires the Massa node to be compiled with feature massa-node/execution-trace.
+// The returned channel delivers responses until the stream ends or encounters an error.
+// The caller must call Close on the returned io.Closer to release resources.
 func (rpc *RPC) GetSlotTransfers(ctx context.Context, finality massagrpc.FinalityLevel) (chan *massagrpc.NewSlotTransfersResponse, io.Closer, error) {
-	// note: this requires massa to be compiled with feature massa-node/execution-trace
 	bidi, err := rpc.pub.NewSlotTransfers(ctx)
 	if err != nil {
 		return nil, nil, fmt.Errorf("new slottransfers failed: %w", err)
@@ -81,6 +90,8 @@ func (rpc *RPC) GetSlotTransfers(ctx context.Context, finality massagrpc.Finalit
 	return ch, bidiCloser{bidi}, nil
 }
 
+// SendOperations submits one or more signed operations to the Massa node and returns
+// the resulting operation IDs.
 func (rpc *RPC) SendOperations(ctx context.Context, op ...[]byte) ([]string, error) {
 	bidi, err := rpc.pub.SendOperations(ctx)
 	if err != nil {
